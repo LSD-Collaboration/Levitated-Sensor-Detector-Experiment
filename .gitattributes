@@ -1,0 +1,6 @@
+# Treat LabVIEW artifacts as binary; disable text merges
+*.vi   binary -merge
+*.vim  binary -merge
+*.ctl  binary -merge
+*.vit  binary -merge
+*.llb  binary -merge

@@ -1,0 +1,21 @@
+# Code Owners
+
+## Analysis Python package
+
+/software/analysis-pipeline/   @org/analysis-maintainers
+
+## LabVIEW & drivers
+
+/instrument/                   @org/instrument-maintainers
+
+## Papers (LaTeX, figure scripts)
+
+/papers/                       @org/paper-leads
+
+## Data contracts (schemas, manifests)
+
+/data/                         @org/data-stewards
+
+## CI & org-wide config
+
+/.github/                      @org/infra-team

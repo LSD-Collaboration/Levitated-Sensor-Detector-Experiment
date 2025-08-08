@@ -1,0 +1,20 @@
+# LabVIEW / DAQ
+*.tdms
+*.tdms_index
+*.aliases
+*.lvlps
+
+# Python & notebooks
+__pycache__/
+.ipynb_checkpoints/
+*.npy
+*.npz
+*.pkl
+.env
+
+# Builds / misc
+build/
+dist/
+*.egg-info/
+.DS_Store
+Thumbs.db
