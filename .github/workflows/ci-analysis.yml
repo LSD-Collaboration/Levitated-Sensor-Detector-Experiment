@@ -1,0 +1,16 @@
+name: CI (analysis)
+on:
+  pull_request: { paths: ['software/analysis-pipeline/**','.github/workflows/ci-analysis.yml'] }
+  push:         { paths: ['software/analysis-pipeline/**'] }
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - run: pip install -U pip ruff black pytest
+      - run: pip install -e software/analysis-pipeline
+      - run: ruff check software/analysis-pipeline
+      - run: black --check software/analysis-pipeline
+      - run: pytest -q software/analysis-pipeline/tests

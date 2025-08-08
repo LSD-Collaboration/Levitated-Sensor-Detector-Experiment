@@ -1,0 +1,47 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false,
+    "properties": {
+        "dataset_id": {
+            "type": "string"
+        },
+        "entries": {
+            "items": {
+                "additionalProperties": false,
+                "properties": {
+                    "bytes": {
+                        "minimum": 0,
+                        "type": "integer"
+                    },
+                    "file": {
+                        "type": "string"
+                    },
+                    "sha256": {
+                        "pattern": "^[a-f0-9]{64}$",
+                        "type": "string"
+                    },
+                    "uri": {
+                        "format": "uri",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "file",
+                    "uri",
+                    "bytes",
+                    "sha256"
+                ],
+                "type": "object"
+            },
+            "type": "array"
+        },
+        "version": {
+            "type": "string"
+        }
+    },
+    "required": [
+        "dataset_id",
+        "entries"
+    ],
+    "type": "object"
+}
