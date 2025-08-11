@@ -53,3 +53,10 @@ if ($gitOk -and $inRepo) {
 
 # 5) Sanity ping
 python -c "import analysis_pipeline, sys; print('analysis_pipeline:', analysis_pipeline.__file__); print('Python:', sys.executable)"
+
+# Ensure detect-secrets baseline exists
+if (-not (Test-Path ".\.secrets.baseline")) {
+  python -m pip install -U detect-secrets
+  python -c "import subprocess,sys; out=subprocess.check_output(['detect-secrets','scan','--exclude-files','data/manifests/.*']); open('.secrets.baseline','wb').write(out)"
+  Write-Host "Created .secrets.baseline (review & commit it)" -ForegroundColor Yellow
+}

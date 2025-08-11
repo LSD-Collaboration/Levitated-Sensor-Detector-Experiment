@@ -1,0 +1,47 @@
+name: Weekly lockfile update
+
+on:
+  schedule:
+    # Mondays 09:00 America/Chicago (14:00 UTC)
+    - cron: "0 14 * * 1"
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pip-tools
+        run: python -m pip install -U pip pip-tools
+
+      - name: Rebuild lockfiles with hashes
+        run: |
+          pip-compile -U --generate-hashes -o requirements.txt requirements.in
+          pip-compile -U --generate-hashes -o requirements-dev.txt requirements-dev.in
+
+      - name: Run pre-commit (format/lint)
+        run: |
+          python -m pip install -U pre-commit
+          pre-commit run --all-files
+
+      - name: Create PR
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: chore/weekly-lock-update
+          delete-branch: true
+          title: "chore: weekly dependency lockfile update"
+          commit-message: "chore: update requirements*.txt via pip-tools"
+          body: |
+            Automated weekly lockfile refresh.
+            - Recompiled with `pip-compile -U` (includes security/bugfix updates)
+            - Hash-pinned for reproducibility
+            Review CI before merging.
+          labels: dependencies
