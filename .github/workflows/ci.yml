@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    paths:
+      - 'software/analysis-pipeline/**'
+      - 'requirements*.txt'
+      - '.github/workflows/ci.yml'
+  pull_request:
+    paths:
+      - 'software/analysis-pipeline/**'
+      - 'requirements*.txt'
+      - '.github/workflows/ci.yml'
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.12"]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+
+      # Install EXACT pinned deps; use python -m so shell differences don't matter
+      - name: Install locked dependencies
+        run: |
+          python -m pip install -U pip
+          python -m pip install --require-hashes -r requirements-dev.txt
+
+      - name: Install package (editable)
+        run: python -m pip install -e software/analysis-pipeline
+
+      - name: Run tests
+        run: python -m pytest -vv

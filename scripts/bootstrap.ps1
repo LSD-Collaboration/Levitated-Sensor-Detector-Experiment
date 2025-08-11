@@ -1,20 +1,24 @@
-# Ensure we're at repo root
-Set-Location $PSScriptRoot\..
+# scripts/bootstrap.ps1  — Windows PowerShell version
+# One-click project setup: create venv, install locked deps, install package, sanity check.
+
+# Go to repo root (this script lives in <repo>\scripts)
+$repoRoot = Resolve-Path "$PSScriptRoot\.."
+Set-Location $repoRoot
 
 # Create venv if missing
 if (-not (Test-Path ".\.venv\Scripts\Activate.ps1")) {
   python -m venv .venv
 }
 
-# Activate venv (PATH is set to .venv\Scripts automatically)
-.\.venv\Scripts\Activate.ps1
+# Activate venv for this shell
+& .\.venv\Scripts\Activate.ps1
 
-# Install exact, hashed deps
+# Install exact, locked dependencies
 python -m pip install -U pip
 pip install --require-hashes -r requirements-dev.txt
 
-# Install your package (editable)
-pip install -e software/analysis-pipeline
+# Install our package (editable)
+pip install -e software\analysis-pipeline
 
-# Quick sanity
-python -c "import analysis_pipeline, sys; print('OK from:', analysis_pipeline.__file__); print('Python:', sys.executable)"
+# Sanity check (PowerShell-friendly, no heredocs)
+python -c "import analysis_pipeline, sys; print('analysis_pipeline OK from:', analysis_pipeline.__file__); print('Python:', sys.executable)"
