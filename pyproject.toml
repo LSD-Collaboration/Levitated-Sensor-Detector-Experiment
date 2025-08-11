@@ -1,0 +1,14 @@
+[tool.pytest.ini_options]
+addopts = "-ra"
+testpaths = ["software/analysis-pipeline/tests"]
+
+# Coverage settings via CLI in CI; if you want local default, uncomment:
+# addopts = "-ra --cov=analysis_pipeline --cov-report=term-missing --cov-fail-under=70"
+
+[tool.mypy]
+python_version = "3.12"
+packages = ["analysis_pipeline"]
+ignore_missing_imports = true         # start lenient, ratchet later
+warn_unused_ignores = true
+no_implicit_optional = true
+check_untyped_defs = true
