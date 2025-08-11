@@ -1,12 +1,20 @@
 [project]
 name = "analysis-pipeline"
 version = "0.1.0"
-requires-python = ">=3.11"
-dependencies = ["numpy", "scipy", "pandas", "matplotlib", "nptdms"]
+description = "Reusable analysis utilities for the experiment"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+  "numpy",
+  "scipy",
+  "pandas",
+  "matplotlib",
+  "nptdms"
+]
 
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-where = ["src"]   # <-- tells setuptools your code is under src/
+where = ["src"]   # we keep package code under src/
