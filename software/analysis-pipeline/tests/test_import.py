@@ -1,4 +1,5 @@
-def test_import():
-    import analysis_pipeline
+import analysis_pipeline as ap
 
-    assert isinstance(analysis_pipeline.__version__, str)
+
+def test_version():
+    assert isinstance(ap.__version__, str)
