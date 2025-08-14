@@ -5,3 +5,4 @@ black
 jsonschema
 pytest-cov
 mypy
+zarr
