@@ -112,14 +112,18 @@ def _time_axis(
         raise ValueError("absolute time requested but t0_abs is missing")
     step_ns = int(round(dt * 1e9))
     offs_ns0 = int(round(start * dt * 1e9))
-    td_ns = (np.arange(0, count, dtype=np.int64) * step_ns + offs_ns0).astype("timedelta64[ns]")
+    td_ns = (np.arange(0, count, dtype=np.int64) * step_ns + offs_ns0).astype(
+        "timedelta64[ns]"
+    )
     return t0_abs + td_ns
 
 
 def _require_zarr() -> None:
     """Guarded import error for optional zarr dependency."""
     if zarr is None:
-        raise RuntimeError("Zarr support requires 'zarr'. Install via: pip install zarr numcodecs")
+        raise RuntimeError(
+            "Zarr support requires 'zarr'. Install via: pip install zarr numcodecs"
+        )
 
 
 __all__ = ["TDMSDataset", "ChannelMeta", "Chunk"]
@@ -156,7 +160,9 @@ class TDMSDataset:
     # ------------------------------------------------------------------
     # Indexing
     # ------------------------------------------------------------------
-    def build_index(self, channels: Optional[Sequence[str]] = None) -> List[ChannelMeta]:
+    def build_index(
+        self, channels: Optional[Sequence[str]] = None
+    ) -> List[ChannelMeta]:
         """Scan files and collect ChannelMeta rows (sorted by t0_abs)."""
         rows: List[ChannelMeta] = []
         for p in self.files:
@@ -175,7 +181,9 @@ class TDMSDataset:
                     n = len(ch)
                     dt, t0 = _read_dt_t0(ch, grp, td)
                     if dt is None or t0 is None:
-                        raise RuntimeError(f"Missing timing metadata in {p}:{grp.name}/{ch.name}")
+                        raise RuntimeError(
+                            f"Missing timing metadata in {p}:{grp.name}/{ch.name}"
+                        )
                     rows.append(
                         ChannelMeta(
                             file=p,
@@ -261,7 +269,9 @@ class TDMSDataset:
         # Sanity: constant dt across files (within 1e-9 s tolerance)
         dts = np.array([m.dt for m in metas], dtype=float)
         if np.ptp(dts) > 1e-9:
-            raise RuntimeError(f"Sample interval (dt) varies across files for '{primary}'.")
+            raise RuntimeError(
+                f"Sample interval (dt) varies across files for '{primary}'."
+            )
 
         dt = float(np.median(dts))
         fs = 1.0 / dt
@@ -283,7 +293,9 @@ class TDMSDataset:
         s1 = None if t1 is None else max(s0, int(np.ceil(t1 * fs)))
 
         # Rolling buffers across files
-        buf: Dict[str, np.ndarray] = {ch: np.empty(0, dtype=dtype or float) for ch in ch_list}
+        buf: Dict[str, np.ndarray] = {
+            ch: np.empty(0, dtype=dtype or float) for ch in ch_list
+        }
         t0_buf_samples: Optional[int] = None
         global_cursor = 0  # samples from dataset start up to current file
         prev_chunk_start: Optional[int] = None
@@ -316,7 +328,9 @@ class TDMSDataset:
 
                 # Restrict to [s0, s1)
                 start_in_file = max(0, s0 - global_cursor)
-                end_in_file = n_file if s1 is None else max(0, min(n_file, s1 - global_cursor))
+                end_in_file = (
+                    n_file if s1 is None else max(0, min(n_file, s1 - global_cursor))
+                )
                 if end_in_file <= start_in_file:
                     break
 
@@ -334,7 +348,9 @@ class TDMSDataset:
                     t0_buf_samples = global_cursor + start_in_file
 
                 # Concatenate tail buffer + new data
-                cats = {ch: np.concatenate([buf[ch], segs[ch]], axis=0) for ch in ch_list}
+                cats = {
+                    ch: np.concatenate([buf[ch], segs[ch]], axis=0) for ch in ch_list
+                }
 
                 # Emit fixed-size windows
                 s = 0
@@ -345,17 +361,26 @@ class TDMSDataset:
                     # Build time axis
                     if absolute_time:
                         t_axis = _time_axis(
-                            start_sample, N, dt, absolute=True, t0_abs=dataset_start_abs, t0_rel=0.0
+                            start_sample,
+                            N,
+                            dt,
+                            absolute=True,
+                            t0_abs=dataset_start_abs,
+                            t0_rel=0.0,
                         )
                     else:
                         t0_rel = start_sample * dt
-                        t_axis = _time_axis(0, N, dt, absolute=False, t0_abs=None, t0_rel=t0_rel)
+                        t_axis = _time_axis(
+                            0, N, dt, absolute=False, t0_abs=None, t0_rel=t0_rel
+                        )
 
                     # Assemble data window
                     data = {ch: cats[ch][s : s + N] for ch in ch_list}
 
                     # NaN-skip policy
-                    if skip_nan_chunks and any(np.isnan(arr).any() for arr in data.values()):
+                    if skip_nan_chunks and any(
+                        np.isnan(arr).any() for arr in data.values()
+                    ):
                         s += hop
                         continue
 
@@ -400,7 +425,9 @@ class TDMSDataset:
             if need <= 0:
                 need = 0
             if tail_fill == "nan":
-                pad = {ch: np.full(need, np.nan, dtype=dtype or float) for ch in ch_list}
+                pad = {
+                    ch: np.full(need, np.nan, dtype=dtype or float) for ch in ch_list
+                }
             elif tail_fill == "zero":
                 pad = {ch: np.zeros(need, dtype=dtype or float) for ch in ch_list}
             else:
@@ -438,7 +465,9 @@ class TDMSDataset:
         """Materialize a single channel across all files (uses iter_chunks)."""
         t_parts: List[np.ndarray] = []
         y_parts: List[np.ndarray] = []
-        for ch in self.iter_chunks(channels=[channel], absolute_time=absolute_time, dtype=dtype):
+        for ch in self.iter_chunks(
+            channels=[channel], absolute_time=absolute_time, dtype=dtype
+        ):
             if ch.t.size and channel in ch.data:
                 t_parts.append(ch.t)
                 y_parts.append(ch.data[channel])
@@ -593,7 +622,9 @@ class TDMSDataset:
             # Write channels
             for name, arr in chunk.data.items():
                 out = (
-                    arr if (dtype is None or arr.dtype == dtype) else arr.astype(dtype, copy=False)
+                    arr
+                    if (dtype is None or arr.dtype == dtype)
+                    else arr.astype(dtype, copy=False)
                 )
                 ch_arrays[name][offset : offset + out.size] = out
 
@@ -622,20 +653,20 @@ class TDMSDataset:
         idx_grp.require_dataset(
             "sample_offset", shape=offsets.shape, chunks=offsets.shape, dtype="int64"
         )[:] = offsets
-        idx_grp.require_dataset("n", shape=(len(metas),), chunks=(len(metas),), dtype="int64")[
-            :
-        ] = np.array([m.n for m in metas])
-        idx_grp.require_dataset("dt", shape=(len(metas),), chunks=(len(metas),), dtype="float64")[
-            :
-        ] = np.array([m.dt for m in metas])
+        idx_grp.require_dataset(
+            "n", shape=(len(metas),), chunks=(len(metas),), dtype="int64"
+        )[:] = np.array([m.n for m in metas])
+        idx_grp.require_dataset(
+            "dt", shape=(len(metas),), chunks=(len(metas),), dtype="float64"
+        )[:] = np.array([m.dt for m in metas])
         t0_ns = (
             (np.array([m.t0_abs for m in metas], dtype="datetime64[ns]") - epoch)
             .astype("timedelta64[ns]")
             .astype("int64")
         )
-        idx_grp.require_dataset("t0_abs_ns", shape=t0_ns.shape, chunks=t0_ns.shape, dtype="int64")[
-            :
-        ] = t0_ns
+        idx_grp.require_dataset(
+            "t0_abs_ns", shape=t0_ns.shape, chunks=t0_ns.shape, dtype="int64"
+        )[:] = t0_ns
         idx_grp.attrs.update({"files": [m.file.as_posix() for m in metas]})
 
         # Store-level metadata
@@ -685,9 +716,9 @@ class TDMSDataset:
 
         k_arr = np.array(k_list, dtype=np.int64)
         t0 = t_list[0]
-        t_sec = (np.array(t_list, dtype="datetime64[ns]") - t0).astype("timedelta64[ns]").astype(
-            "int64"
-        ) / 1e9
+        t_sec = (np.array(t_list, dtype="datetime64[ns]") - t0).astype(
+            "timedelta64[ns]"
+        ).astype("int64") / 1e9
 
         # Linear model: t ≈ a + dt_hat * k
         A = np.vstack([k_arr.astype(float), np.ones_like(k_arr, dtype=float)]).T
@@ -843,9 +874,15 @@ if __name__ == "__main__":
     ap.add_argument("--group", type=str, default=None, help="TDMS group name")
     ap.add_argument("--channel", type=str, default=None, help="Channel for examples")
     ap.add_argument(
-        "--to-zarr", dest="to_zarr", type=str, default=None, help="Write Zarr store at path"
+        "--to-zarr",
+        dest="to_zarr",
+        type=str,
+        default=None,
+        help="Write Zarr store at path",
     )
-    ap.add_argument("--drift", action="store_true", help="Estimate dt drift for --channel")
+    ap.add_argument(
+        "--drift", action="store_true", help="Estimate dt drift for --channel"
+    )
     args = ap.parse_args()
 
     ds = TDMSDataset(args.folder, group=args.group)
