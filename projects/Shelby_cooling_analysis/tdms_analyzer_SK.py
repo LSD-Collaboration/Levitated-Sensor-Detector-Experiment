@@ -9,6 +9,8 @@ functions in analysis_functions.py
 
 """
 
+# %%
+
 import os
 from nptdms import TdmsFile
 from scipy import signal as s
@@ -18,7 +20,6 @@ import matplotlib.pyplot as plt
 import analysis_functions as fun  # homemade functions for fitting, calibrating, etc.
 
 
-# hello
 def tdsm_import(files, CHANNEL_INDEX, FILE_INDEX, FS=None):
     """Takes list of all file names, and single indices for channel and file
     to import single dataset and its sampling frequency"""
@@ -77,7 +78,8 @@ def tdsm_import(files, CHANNEL_INDEX, FILE_INDEX, FS=None):
 plt.close("all")
 
 # Gather and sort list of all .tdms files in the folder
-FOLDER = "Shelby_071725_hexcooling_02"
+path = "C:/Users/shelb/Desktop/"
+FOLDER = path + "Shelby_071725_hexcooling_02"
 
 files = sorted(
     os.path.join(FOLDER, f) for f in os.listdir(FOLDER) if f.lower().endswith(".tdms")
@@ -138,7 +140,8 @@ cooled_temp = fun.full_temperature_calibration(
 
 
 # Gather and sort list of all .tdms files in the folder
-FOLDER = "Shelby_071725_hexcooling_02"
+path = "C:/Users/shelb/Desktop/"
+FOLDER = path + "\Shelby_071725_hexcooling_02"
 
 files = sorted(
     os.path.join(FOLDER, f) for f in os.listdir(FOLDER) if f.lower().endswith(".tdms")
